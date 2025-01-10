@@ -8,7 +8,7 @@ for i in range(n):
     if direction == 'IN':
         parking_lot.add(car_number)
     elif direction == 'OUT':
-        parking_lot.remove(car_number)
+        parking_lot.discard(car_number)
 
 if parking_lot:
     print('\n'.join(parking_lot))
