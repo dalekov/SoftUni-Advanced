@@ -11,7 +11,6 @@ for i in range(n):
         parking_lot.remove(car_number)
 
 if parking_lot:
-    for car_number in parking_lot:
-        print(car_number)
+    print('\n'.join(parking_lot))
 else:
     print("Parking Lot is Empty")
