@@ -1,4 +1,4 @@
-clothes = list(map(int, input().split()))
+clothes = list(map(int, input().split())) # clothes stack
 capacity = int(input())
 racks = 0
 
