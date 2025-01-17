@@ -1,76 +1,69 @@
-rows, cols = map(int, input().split())
-matrix = [[x for x in input()] for _ in range(rows)]
-movement_commands = input()
+def spread_bunnies(mat, bunnies_set):
+    new_bunnies = set() # second set ensures there are no duplicate bunnies
+    directions = [(-1, 0), (0, 1), (0, -1), (1, 0)]
 
-# Map for directions
-directions = {
-    'U': (-1, 0),
-    'D': (1, 0),
-    'L': (0, -1),
-    'R': (0, 1)
+    for b_row, b_col in bunnies_set:
+        for d_row, d_col in directions:
+            new_row, new_col = b_row + d_row, b_col + d_col
+            # Check if position is valid (within the matrix boundaries)
+            if 0 <= new_row < len(mat) and 0 <= new_col < len(mat[0]): # len(mat)
+                mat[new_row][new_col] = mat[b_row][b_col]
+                new_bunnies.add((new_row, new_col))
+
+    return mat, bunnies_set.union(new_bunnies)
+
+
+rows, cols = [int(x) for x in input().split()]
+
+matrix = []
+p_row, p_col = 0, 0
+bunnies = set()
+
+has_won = False
+has_lost = False
+
+for row in range(rows):
+    matrix.append(list(input()))
+    for col in range(cols):
+        if matrix[row][col] == 'P':
+            p_row, p_col = row, col
+        elif matrix[row][col] == 'B':
+            bunnies.add((row, col))
+
+commands = list(input())
+
+moves = {
+    'U': lambda r, c: (r - 1, c),
+    'D': lambda r, c: (r + 1, c),
+    'L': lambda r, c: (r, c - 1),
+    'R': lambda r, c: (r, c + 1)
 }
 
-player_won = False
-player_dead = False
+for command in commands:
+    new_p_row, new_p_col = moves[command](p_row, p_col)
+    matrix, bunnies = spread_bunnies(matrix, bunnies)
 
+    if (p_row, p_col) not in bunnies:
+        matrix[p_row][p_col] = '.'
 
-for move in movement_commands:
-    bunny_positions = []
-    # Determining player and bunny starting positions:
-    for i in range(rows):
-        for j in range(cols):
-            if matrix[i][j] == 'P':
-                player_curr_pos = (i, j)
-            elif matrix[i][j] == 'B':
-                bunny_curr_pos = (i, j)
-                bunny_positions.append(bunny_curr_pos)
-
-    # Move the player
-    new_player_row = player_curr_pos[0] + directions[move][0]
-    new_player_col = player_curr_pos[1] + directions[move][1]
-
-    # Check if player escapes
-    if not (0 <= new_player_row < rows and 0 <= new_player_col < cols):
-        player_won = True
-        player_won_coords = [player_curr_pos[0], player_curr_pos[1]]
-        matrix[player_curr_pos[0]][player_curr_pos[1]] = '.'
-
-    # Check if player bumps into a bunny
-    if 0 <= new_player_row < rows and 0 <= new_player_col < cols:
-        if matrix[new_player_row][new_player_col] == 'B':
-            player_dead = True
-            player_dead_coords = [new_player_row, new_player_col]
-    # If not bumping into bunny, update player pos
-        if 0 <= new_player_row < rows and 0 <= new_player_col < cols:
-            matrix[player_curr_pos[0]][player_curr_pos[1]] = '.'
-            matrix[new_player_row][new_player_col] = 'P'
-
-    # Spread bunnies
-    new_bunny_positions = []
-    for bunny_row, bunny_col in bunny_positions:
-        for dr, dc in directions.values():
-            new_row, new_col = bunny_row + dr, bunny_col + dc
-            if 0 <= new_row < rows and 0 <= new_col < cols:
-                matrix[new_row][new_col] = '.'
-                new_bunny_positions.append((new_row, new_col))
-
-    # Update matrix with new bunnies
-    for br, bc in new_bunny_positions:
-        matrix[br][bc] = 'B'
-
-    # Check if the player is now on a bunny
-    if matrix[new_player_row][new_player_col] == 'B':
-        player_dead = True
-        player_dead_coords = [new_player_row, new_player_col]
-
-    if player_won or player_dead:
+    # if player is out of bounds, player wins
+    if new_p_row < 0 or new_p_row >= rows or new_p_col < 0 or new_p_col >= cols:
+        has_won = True
         break
 
+    # If player lands on a bunny after move, player loses
+    p_row, p_col = new_p_row, new_p_col
+    if matrix[p_row][p_col] == 'B':
+        has_lost = True
+        break
+
+# Print final state of matrix
 for row in matrix:
     print(''.join(row))
 
-if player_won:
-    print(f"won: {' '.join(map(str, player_won_coords))}")
-    exit()
-if player_dead:
-    print(f"dead: {' '.join(map(str, player_dead_coords))}")
+# Print result
+if has_won:
+    print(f"won: {p_row} {p_col}")
+elif has_lost:
+    print(f"dead: {p_row} {p_col}")
+
